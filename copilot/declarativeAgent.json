@@ -1,0 +1,41 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.5/schema.json",
+  "version": "v1.5",
+  "name": "Sentry",
+  "description": "Windows security watch. Reads the hourly and monthly evidence collected from one machine, spots suspicious activity, explains it in plain English, and proposes a response for you to approve. Never acts on its own.",
+  "instructions": "$[file('instructions.txt')]",
+  "conversation_starters": [
+    {
+      "title": "Hourly pass",
+      "text": "What did you see in the most recent collection? One line if it's nothing of note, a full defence package otherwise."
+    },
+    {
+      "title": "Explain an alert",
+      "text": "Walk me through the latest Medium-or-above finding: what happened, why it matters, and what you suggest."
+    },
+    {
+      "title": "Monthly hardening report",
+      "text": "Read this month's hardening posture and write the hardening report."
+    },
+    {
+      "title": "Coverage check",
+      "text": "Did any collector fail recently? Show me the blind spots from manifest.json."
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "OneDriveAndSharePoint",
+      "items_by_url": [
+        {
+          "url": "https://CONTOSO.sharepoint.com/sites/Sentry/Shared%20Documents/SentryEvidence"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "sentryReadOnlyMcp",
+      "file": "mcp-action.json"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+# Sentry configuration for Mistral Vibe.
+#
+# Place this at ~/.vibe/config.toml, or set the VIBE_HOME environment variable
+# to point at this folder. Sentry is a READ-ONLY watcher, so every tool that
+# could run a command or change the machine is set to NEVER — the persona
+# forbids it, and these permissions enforce it.
+#
+# NOTE: Vibe's exact config keys evolve; if a key below is rejected, run the
+# first-run wizard once (`vibe`) to generate a reference ~/.vibe/config.toml and
+# align the key names, keeping the same intent — filesystem read allowed,
+# shell/write blocked.
+
+[model]
+provider = "mistral"
+# Use a model with real reasoning ability. Log analysis is exactly where a weak
+# model produces confident nonsense.
+name = "mistral-medium-3.5"
+temperature = 0.2
+
+# ---------------------------------------------------------------------------
+# The agent's ONE external tool: read-only filesystem access to the Sentry
+# evidence folder, via the reference MCP filesystem server. The directory
+# argument is the sandbox — the server cannot see anything else on the machine.
+# Scope it to the parent, NOT the collections subfolder, or the monthly report
+# has nothing to read.
+# ---------------------------------------------------------------------------
+[mcp_servers.sentry-fs]
+transport = "stdio"
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "C:\\ProgramData\\Sentry"]
+
+# ---------------------------------------------------------------------------
+# Tool permissions. ALWAYS = run without asking, ASK = prompt first,
+# NEVER = blocked entirely. Anything that could change the machine is NEVER.
+# This is the enforcement layer behind "never construct your own PowerShell".
+# ---------------------------------------------------------------------------
+[tools.permissions]
+# Built-in tools that must never run for this agent:
+shell        = "NEVER"
+bash         = "NEVER"
+execute      = "NEVER"
+run_command  = "NEVER"
+write_file   = "NEVER"
+edit_file    = "NEVER"
+apply_patch  = "NEVER"
+delete_file  = "NEVER"
+
+# Read-only MCP filesystem functions the agent may use freely:
+"sentry-fs.read_file"              = "ALWAYS"
+"sentry-fs.read_text_file"         = "ALWAYS"
+"sentry-fs.read_multiple_files"    = "ALWAYS"
+"sentry-fs.list_directory"         = "ALWAYS"
+"sentry-fs.directory_tree"         = "ALWAYS"
+"sentry-fs.search_files"           = "ALWAYS"
+"sentry-fs.get_file_info"          = "ALWAYS"
+"sentry-fs.list_allowed_directories" = "ALWAYS"
+# Any write/move function exposed by the server is blocked:
+"sentry-fs.write_file"   = "NEVER"
+"sentry-fs.edit_file"    = "NEVER"
+"sentry-fs.move_file"    = "NEVER"
+"sentry-fs.create_directory" = "NEVER"
+
+[agent]
+# The built-in "default" profile requires approval for tool executions — keep it.
+# Do not switch to an auto-approve/YOLO profile for this agent.
+profile = "default"

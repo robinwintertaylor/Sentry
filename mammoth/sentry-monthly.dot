@@ -1,0 +1,22 @@
+// Sentry — monthly hardening report, as a Mammoth pipeline.
+// Same read-only discipline as the hourly pipeline (see sentry-hourly.dot and
+// DEPLOY.md): run under the low-privilege 'sentry-svc' account, human gate before
+// anything is filed. Recommend only; never apply.
+
+digraph sentry_monthly {
+    label="Sentry — monthly hardening report"
+
+    // Is there a posture file to read? Deterministic check, no LLM.
+    check_posture [shape=octagon, command="powershell -NoProfile -Command \"if (Get-ChildItem 'C:\\ProgramData\\Sentry\\monthly' -Directory) { exit 0 } else { exit 1 }\""]
+
+    // Write the recommendations report from the posture data.
+    report [shape=box, prompt="Read ./sentry-instructions.md in full. Then read the latest monthly\\<YYYYMM>\\hardening-posture.json and coverage.json under C:\\ProgramData\\Sentry and write this month's hardening report to ./reports/hardening-<YYYYMM>.md. Follow the report format in the instructions. Three to seven recommendations, each tied to specific evidence in the posture file, each with the exact rollback. Lead with high-benefit/no-disruption items; never lead with the drastic option. Never recommend something already in place. Never recommend weakening anything to reduce friction. Recommend only — never apply a change, never run a command."]
+
+    // Human gate before the report is filed or sent.
+    review [shape=house, prompt="Review the hardening report before it is filed or shared. Approve to accept; reject to send back for revision.", timeout="86400", default="approve"]
+
+    done [shape=doublecircle]
+
+    check_posture -> report [condition="outcome=pass"]
+    report -> review -> done
+}

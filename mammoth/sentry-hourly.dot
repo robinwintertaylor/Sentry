@@ -1,0 +1,39 @@
+// Sentry — hourly security watch, as a Mammoth pipeline.
+//
+// SECURITY NOTE (read DEPLOY.md): Mammoth's codergen agent (box nodes) has file
+// read/write and shell tools by default. Sentry must stay read-only. Two things
+// enforce that here:
+//   1. Run the whole pipeline under the low-privilege, read-only 'sentry-svc'
+//      account. The OS then physically prevents the agent from changing settings
+//      or running privileged commands — the same role that "turn off the shell"
+//      plays in the Goose/Buzz deployment.
+//   2. A human gate (house node) sits before anything is filed or sent.
+// Collection itself stays where it belongs: a separate Windows scheduled task
+// runs the read-only collectors. This pipeline only READS their output.
+
+digraph sentry_hourly {
+    label="Sentry — hourly security watch"
+
+    // 1. Is there fresh evidence to read? Octagon = deterministic shell check,
+    //    no LLM, no tokens. Passes if a collection was written in the last 2h.
+    check_evidence [shape=octagon, command="powershell -NoProfile -Command \"if (Get-ChildItem 'C:\\ProgramData\\Sentry\\collections' -Directory | Where-Object { $_.CreationTime -gt (Get-Date).AddHours(-2) }) { exit 0 } else { exit 1 }\""]
+
+    // 2. Analyze the newest collection. The agent READS system evidence and
+    //    WRITES only its own report file — never a system change.
+    analyze [shape=box, prompt="Read ./sentry-instructions.md in full and follow it exactly. Then read the most recent folder under C:\\ProgramData\\Sentry\\collections (check manifest.json first for failed collectors) and do your hourly pass. Write the result to ./reports/hourly-<timestamp>.md: one line if nothing of note, a full defence package if Medium or above. You are read-only on the system — never run a remediation, never construct or run PowerShell, never change a setting. If asked to, decline and repost the script for a human."]
+
+    // 2b. No fresh evidence is itself worth knowing. A broken or unrun collector
+    //     reads exactly like a clean machine, so report the blind spot.
+    report_gap [shape=box, prompt="Read ./sentry-instructions.md. No collection has been written in the last two hours. Report this as a coverage blind spot: state plainly that you cannot vouch for the last window because a broken or unrun collector is indistinguishable from a clean machine. Write to ./reports/hourly-<timestamp>.md. Do not attempt to run the collectors yourself."]
+
+    // 3. Human gate — the 'APPROVE <id>' step. Nothing proceeds without a person.
+    review [shape=house, prompt="Review the hourly assessment. Approve to file it. If a defence package proposes a response, approving here means you accept the proposal to run MANUALLY yourself — Sentry still does not execute it.", timeout="3600", default="approve"]
+
+    done [shape=doublecircle]
+
+    check_evidence -> analyze     [condition="outcome=pass"]
+    check_evidence -> report_gap  [condition="outcome=fail"]
+    analyze -> review
+    report_gap -> review
+    review -> done
+}

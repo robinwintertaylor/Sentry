@@ -1,0 +1,37 @@
+{
+  "$comment": "Sentry hard lockdown for Claude Code. The persona forbids running commands; this file ENFORCES it. Enforcement beats instruction. Place at .claude/settings.json (commit it) so every session inherits the deny rules.",
+  "permissions": {
+    "defaultMode": "default",
+    "deny": [
+      "Bash",
+      "Bash(*)",
+      "Write",
+      "Write(*)",
+      "Edit",
+      "Edit(*)",
+      "MultiEdit",
+      "NotebookEdit",
+      "WebFetch",
+      "WebSearch",
+      "mcp__sentry-fs__write_file",
+      "mcp__sentry-fs__edit_file",
+      "mcp__sentry-fs__create_directory",
+      "mcp__sentry-fs__move_file"
+    ],
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "mcp__sentry-fs__read_file",
+      "mcp__sentry-fs__read_text_file",
+      "mcp__sentry-fs__read_multiple_files",
+      "mcp__sentry-fs__list_directory",
+      "mcp__sentry-fs__directory_tree",
+      "mcp__sentry-fs__search_files",
+      "mcp__sentry-fs__get_file_info",
+      "mcp__sentry-fs__list_allowed_directories"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["sentry-fs"]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.19",
+  "id": "REPLACE_WITH_A_NEW_GUID",
+  "version": "1.0.0",
+  "developer": {
+    "name": "Sentry Security",
+    "websiteUrl": "https://contoso.com/sentry",
+    "privacyUrl": "https://contoso.com/sentry/privacy",
+    "termsOfUseUrl": "https://contoso.com/sentry/terms"
+  },
+  "name": {
+    "short": "Sentry",
+    "full": "Sentry — Windows security watch"
+  },
+  "description": {
+    "short": "Reads security evidence, explains it, proposes a response. Never acts alone.",
+    "full": "Sentry is a detection-and-explanation security agent for one Windows machine. A scheduled task collects read-only evidence and syncs it to SharePoint; Sentry reads that evidence, flags suspicious activity in plain English, and proposes a response for a human to approve. It never remediates, never runs a command, and works alongside whatever antivirus is installed."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#1F2937",
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "sentry",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  }
+}

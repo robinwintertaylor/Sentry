@@ -1,0 +1,13 @@
+{
+  "$comment": "Sentry's ONE tool: read-only filesystem access to C:\\ProgramData\\Sentry. This directory argument is the sandbox — the server cannot see anything else on the machine. Scope it to the parent, NOT the collections subfolder, or the monthly report has nothing to read. No shell server is listed here on purpose.",
+  "mcpServers": {
+    "sentry-fs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\ProgramData\\Sentry"
+      ]
+    }
+  }
+}
